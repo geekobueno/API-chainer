@@ -18,8 +18,7 @@ The **Workflow Engine** is a backend system designed to allow administrators to 
 
 - Node.js (version 16.x or higher)
 - npm (Node Package Manager)
-- Docker (for running Node-RED in a container, optional)
-- MongoDB (or any database for storing workflow configurations)
+- MongoDB
 
 ### 1. Clone the repository
 
