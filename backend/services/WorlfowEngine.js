@@ -1,10 +1,14 @@
-// services/WorkflowEngine.js
 const RED = require('node-red');
 const axios = require('axios');
-const ExecutionLog = require('../models/Execution');
+const { Execution } = require('../models/Execution');
+const EventEmitter = require('events');
 
 class WorkflowEngine {
   constructor() {
+    // Event emitter for workflow execution events
+    this.eventEmitter = new EventEmitter();
+    
+    // Map of node type to creation function
     this.nodeTypes = {
       api: this.createApiNode,
       condition: this.createConditionNode,
@@ -12,28 +16,61 @@ class WorkflowEngine {
     };
   }
 
+  /**
+   * Main entry point for workflow execution
+   * @param {Object} workflow - Workflow definition from database
+   * @param {Object} inputData - Initial input data for workflow
+   */
   async executeWorkflow(workflow, inputData = {}) {
-    const executionId = new mongoose.Types.ObjectId();
-    
+    // Create execution record
+    const execution = await Execution.create({
+      workflowId: workflow._id,
+      status: 'running',
+      input: inputData,
+      startTime: new Date()
+    });
+
     try {
-      const flow = this.generateFlow(workflow, executionId);
-      await this.deployToNodeRed(flow);
+      // Convert workflow definition to Node-RED flow
+      const flow = this.generateFlow(workflow, execution._id);
       
-      const result = await this.triggerFlow(executionId, inputData);
-      await this.logExecution(executionId, workflow._id, 'completed', result);
+      // Deploy flow to Node-RED
+      const flowId = await this.deployToNodeRed(flow);
       
-      return { executionId, result };
+      // Trigger flow execution and wait for completion
+      const result = await this.triggerFlow(flowId, execution._id, inputData);
+      
+      // Update execution record
+      await Execution.findByIdAndUpdate(execution._id, {
+        status: 'completed',
+        output: result,
+        endTime: new Date()
+      });
+
+      return { executionId: execution._id, result };
     } catch (error) {
-      await this.logExecution(executionId, workflow._id, 'failed', null, error);
+      // Log error and update execution status
+      await Execution.findByIdAndUpdate(execution._id, {
+        status: 'failed',
+        error: error.message,
+        endTime: new Date()
+      });
       throw error;
     }
   }
 
+  /**
+   * Convert workflow definition to Node-RED flow
+   * @param {Object} workflow - Workflow definition
+   * @param {String} executionId - Execution ID for tracking
+   */
   generateFlow(workflow, executionId) {
+    // Convert nodes to Node-RED format
     const nodes = workflow.nodes.map(node => 
       this.nodeTypes[node.type](node, executionId)
     );
 
+    // Create edges between nodes
     const edges = workflow.edges.map(edge => ({
       id: `${edge.source}_${edge.target}`,
       type: 'link',
@@ -45,6 +82,9 @@ class WorkflowEngine {
     return [...nodes, ...edges];
   }
 
+  /**
+   * Create Node-RED node for API requests
+   */
   createApiNode(node, executionId) {
     return {
       id: node.id,
@@ -59,6 +99,9 @@ class WorkflowEngine {
     };
   }
 
+  /**
+   * Create Node-RED node for conditional logic
+   */
   createConditionNode(node, executionId) {
     return {
       id: node.id,
@@ -74,6 +117,9 @@ class WorkflowEngine {
     };
   }
 
+  /**
+   * Create Node-RED node for data transformation
+   */
   createTransformNode(node, executionId) {
     return {
       id: node.id,
@@ -85,6 +131,9 @@ class WorkflowEngine {
     };
   }
 
+  /**
+   * Generate JavaScript function for data transformation
+   */
   generateTransformFunction(transformations) {
     return `
       module.exports = function(msg) {
@@ -98,6 +147,9 @@ class WorkflowEngine {
     `;
   }
 
+  /**
+   * Deploy flow to Node-RED runtime
+   */
   async deployToNodeRed(flow) {
     return new Promise((resolve, reject) => {
       RED.nodes.addFlow(flow)
@@ -109,21 +161,60 @@ class WorkflowEngine {
     });
   }
 
-  async triggerFlow(executionId, inputData) {
-    // Implement flow triggering logic using Node-RED runtime API
+  /**
+   * Trigger flow execution and collect results
+   * @param {String} flowId - Node-RED flow ID
+   * @param {String} executionId - Execution tracking ID
+   * @param {Object} inputData - Initial input data
+   */
+  async triggerFlow(flowId, executionId, inputData) {
     return new Promise((resolve, reject) => {
-      // Logic to trigger flow and collect results
+      // Set up event listeners for flow completion
+      const timeout = setTimeout(() => {
+        reject(new Error('Flow execution timeout'));
+      }, 30000); // 30 second timeout
+
+      // Listen for node completion events
+      this.eventEmitter.once(`flow.${executionId}.complete`, (result) => {
+        clearTimeout(timeout);
+        resolve(result);
+      });
+
+      this.eventEmitter.once(`flow.${executionId}.error`, (error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+
+      // Start flow execution
+      RED.nodes.getFlow(flowId).then(flow => {
+        const startNode = flow.nodes.find(n => !n.wires.length);
+        if (!startNode) {
+          reject(new Error('No start node found'));
+          return;
+        }
+
+        // Inject input data into first node
+        RED.nodes.getNode(startNode.id).receive({
+          payload: inputData,
+          executionId
+        });
+      });
     });
   }
 
-  async logExecution(executionId, workflowId, status, result, error = null) {
-    await ExecutionLog.create({
-      executionId,
-      workflowId,
-      status,
-      result,
-      error: error?.message,
-      timestamp: new Date()
+  /**
+   * Log node execution progress
+   */
+  async logNodeExecution(executionId, nodeId, status, data) {
+    await Execution.findByIdAndUpdate(executionId, {
+      $push: {
+        logs: {
+          nodeId,
+          timestamp: new Date(),
+          type: status,
+          data
+        }
+      }
     });
   }
 }
