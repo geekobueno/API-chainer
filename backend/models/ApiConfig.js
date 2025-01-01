@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const apiConfigSchema = new mongoose.Schema({
     name: { type: String, required: true },
     baseUrl: { type: String, required: true },
