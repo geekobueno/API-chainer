@@ -47,6 +47,4 @@ const workflowSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = {
-    Workflow: mongoose.model('Workflow', workflowSchema)
-  };
+module.exports = mongoose.model('Workflow', workflowSchema)

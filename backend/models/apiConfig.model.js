@@ -26,6 +26,4 @@ const apiConfigSchema = new mongoose.Schema({
   }, { timestamps: true });
   
 
-  module.exports = {
-    ApiConfig: mongoose.model('ApiConfig', apiConfigSchema)
-  };
+  module.exports = mongoose.model('ApiConfig', apiConfigSchema)
