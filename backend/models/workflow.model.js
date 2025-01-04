@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const nodeSchema = new mongoose.Schema({
-  id: { type: String, required: true },
   type: {
     type: String,
     enum: ['api', 'condition', 'transform', 'trigger'],
@@ -28,7 +27,8 @@ const nodeSchema = new mongoose.Schema({
     x: Number,
     y: Number
   }
-});
+},  { timestamps: true }
+);
 
 const workflowSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -47,4 +47,7 @@ const workflowSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Workflow', workflowSchema)
+module.exports ={
+ Workflow : mongoose.model('Workflow', workflowSchema),
+ Node : mongoose.model('Node', nodeSchema)
+} 
