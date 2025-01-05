@@ -6,12 +6,12 @@ const http = require("http");
 const RED = require("node-red");
 
 // Models (Import your MongoDB models here)
-const ApiConfig = require("./models/apiConfig.model");
 const ExecutionLog = require("./models/execution.model");
 
 //routes import
 const userRoute = require("./routes/user.route");
 const elementRoute = require("./routes/element.route");
+const apiConfigRoute = require("./routes/apiConfig.route")
 
 const app = express();
 const server = http.createServer(app);
@@ -49,7 +49,8 @@ RED.start();
 
 //utility routes
 app.use("/users", userRoute);
-app.use("/config", elementRoute);
+app.use("/element", elementRoute);
+app.use("/config", apiConfigRoute)
 
 // Basic health check route
 app.get("/health", (req, res) => {

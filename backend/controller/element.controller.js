@@ -5,13 +5,14 @@ const createNode = async (req, res) => {
     const node = await Node.create(req.body);
     res.status(201).json(node);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
 const getAllNode = async (req, res) => {
   try {
-    const node = await Node.find();
+    const nodes = await Node.find();
+    res.json(nodes)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -20,6 +21,8 @@ const getAllNode = async (req, res) => {
 const getSingleNode = async (req, res) => {
   try {
     const node = await Node.findById(req.params.id);
+    if (!node) return res.status(404).json({ error: "Node not found" });
+    res.json(node)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -31,18 +34,18 @@ const updateNode = async (req, res) => {
       new: true,
       runValidators: true,
     });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!node) return res.status(404).json({ error: "Node not found" });
 
-    res.json(user);
+    res.json(node);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
 const deleteNode = async (req, res) => {
   try {
     const node = await Node.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!node) return res.status(404).json({ error: "Node not found" });
     res.json({ message: "Node deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -51,16 +54,17 @@ const deleteNode = async (req, res) => {
 
 const createWorkflow = async (req, res) => {
   try {
-    const node = await Workflow.create(req.body);
-    res.status(201).json(node);
+    const workflow = await Workflow.create(req.body);
+    res.status(201).json(workflow);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
 const getAllWorkflow = async (req, res) => {
   try {
-    const node = await Workflow.find();
+    const workflows = await Workflow.find();
+    res.json(workflows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -68,7 +72,8 @@ const getAllWorkflow = async (req, res) => {
 
 const getSingleWorkflow = async (req, res) => {
   try {
-    const node = await Workflow.findById(req.params.id);
+    const workflow = await Workflow.findById(req.params.id);
+    res.json(workflow)
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -76,23 +81,23 @@ const getSingleWorkflow = async (req, res) => {
 
 const updateWorkflow = async (req, res) => {
   try {
-    const node = await Workflow.findByIdAndUpdate(req.params.id, req.body, {
+    const workflow = await Workflow.findByIdAndUpdate(req.params.id, req.body, {
       new: true,
       runValidators: true,
     });
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (!workflow) return res.status(404).json({ error: "Workflow not found" });
 
-    res.json(user);
+    res.json(workflow);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
 const deleteWorkflow = async (req, res) => {
   try {
-    const node = await Workflow.findByIdAndDelete(req.params.id);
-    if (!user) return res.status(404).json({ error: "User not found" });
-    res.json({ message: "Node deleted successfully" });
+    const workflow = await Workflow.findByIdAndDelete(req.params.id);
+    if (!workflow) return res.status(404).json({ error: "workflow not found" });
+    res.json({ message: "Workflow deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
