@@ -12,16 +12,6 @@ The **Workflow Engine** is a backend system designed to allow administrators to 
 - **Endpoint Generation**: Generate a unique API endpoint that triggers the designed workflow.
 - **Logging & Debugging**: Track and debug workflow executions with detailed logs.
 
-## Installation
+## Roadmap
 
-### Prerequisites
-
-- Node.js (version 16.x or higher)
-- npm (Node Package Manager)
-- MongoDB
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/geekobueno/API-chainer
-cd API-chainer
+![Roadmap](https://www.mermaidchart.com/raw/bb30feb8-6438-4b48-9b04-c016f537f300?theme=light&version=v0.1&format=svg)
