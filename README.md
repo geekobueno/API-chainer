@@ -12,6 +12,18 @@ The **Workflow Engine** is a backend system designed to allow administrators to 
 - **Endpoint Generation**: Generate a unique API endpoint that triggers the designed workflow.
 - **Logging & Debugging**: Track and debug workflow executions with detailed logs.
 
-## Roadmap
+## Development Roadmap
+![Dev Roadmap](./images/dev%20roadmap.png)
 
-![Roadmap](https://www.mermaidchart.com/raw/bb30feb8-6438-4b48-9b04-c016f537f300?theme=light&version=v0.1&format=svg)
+
+## System Architecture
+![System Architecture](./images/system%20archictecture.png)
+
+## Data Flow
+![Data Flow](./images/data%20flow.png)
+
+## Workflow States
+![Workflow States](./images/workflow%20states.png)
+
+## Deployment Architecture
+![Deployment Architecture](./images/deployment%20archictecture.png)
