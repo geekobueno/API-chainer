@@ -1,14 +1,6 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcrypt");
-
-const createUser = async (req, res) => {
-  try {
-    const user = await User.create(req.body);
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+const jwt = require('jsonwebtoken');
 
 const getAllUser = async (req, res) => {
   try {
@@ -61,10 +53,71 @@ const deleteUser = async (req, res) => {
   }
 };
 
+
+// Generate JWT
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
+
+// Register User
+const registerUser = async (req, res) => {
+  const { username, email, password, role } = req.body;
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) return res.status(400).json({ message: 'User already exists' });
+
+    const user = await User.create(req.body);
+    if (user) {
+      res.status(201).json({user, token: generateToken(user._id)});
+    } else {
+      res.status(400).json({ message: 'Invalid user data' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Login User
+const loginUserWithName = async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = await User.findOne({ username });
+    if (user && (await user.matchPassword(password))) {
+      res.status(200).json({
+        user,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid username or password' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const loginUserWithMail = async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (user && (await user.matchPassword(password))) {
+      res.status(200).json({
+        user,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid username or password' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
-  createUser,
   getAllUser,
   getSingleUser,
   updateUser,
   deleteUser,
+  registerUser,
+  loginUserWithName,
+  loginUserWithMail
 };

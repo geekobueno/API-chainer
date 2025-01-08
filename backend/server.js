@@ -50,7 +50,7 @@ RED.start();
 app.use("/users", userRoute);
 app.use("/element", elementRoute);
 app.use("/config", apiConfigRoute);
-app.use("/log", apiConfigRoute);
+app.use("/log", executionRoute);
 
 
 // Basic health check route
