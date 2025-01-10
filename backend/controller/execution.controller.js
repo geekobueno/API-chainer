@@ -1,4 +1,4 @@
-const ExecutionLog = require("./models/execution.model");
+const ExecutionLog = require("../models/execution.model");
 
 const createLog = async (req,res) => {
     try {

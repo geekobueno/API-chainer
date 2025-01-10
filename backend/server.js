@@ -58,7 +58,6 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK" });
 });
 
-// Similar CRUD operations for Workflows, ApiConfig, and ExecutionLog
 
 // Start the server
 const PORT = process.env.PORT || 5000;

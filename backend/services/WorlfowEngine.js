@@ -1,6 +1,5 @@
 const RED = require('node-red');
-const axios = require('axios');
-const { Execution } = require('../models/Execution');
+const { Execution } = require('../models/execution.model');
 const EventEmitter = require('events');
 
 class WorkflowEngine {
